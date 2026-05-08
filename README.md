@@ -76,7 +76,7 @@ Cost-optimized: 80%+ of processing runs on free-tier models (Gemini Flash, Llama
 | Transcription | whisperX |
 | Entity Extraction | GLiNER2 |
 | LLM Routing | OpenRouter |
-| Auth | JWT + httpOnly refresh tokens |
+| Auth | JWT + expo-secure-store refresh tokens |
 | Mobile App | React Native (Expo, TypeScript) |
 | Distribution | Apple App Store + Google Play Store |
 | Backend Deployment | Docker Compose (self-host) or cloud VPS |
@@ -126,17 +126,26 @@ The app connects to `http://localhost:8000` by default in development.
 
 ## Project Status
 
-ATLARS is currently in **Phase 0 — Scaffold**.
+ATLARS is currently in **Phase 0 — Scaffold** (complete). Phase 1 is now open for contributors.
 
+**Phase 0 — Scaffold** ✅
 - [x] Architecture finalized
 - [x] Personality framework decided (OCEAN + 8 Life Domains + Life Stage)
 - [x] Full MongoDB data model designed
 - [x] API contract defined
 - [x] Codebase folder structure planned
-- [ ] Docker Compose setup
-- [ ] FastAPI skeleton + auth
-- [ ] MongoDB connection layer
-- [ ] Next.js frontend skeleton
+- [x] Docker Compose setup (MongoDB + Redis + FastAPI + Celery)
+- [x] FastAPI skeleton + auth (register, login, refresh, logout)
+- [x] MongoDB connection layer (Motor async)
+- [x] Expo mobile scaffold (auth screens, token management, tab navigation)
+
+**Phase 1 — Capture** 🚧 In Progress
+- [ ] Text entry CRUD — `POST/GET/PATCH/DELETE /entries/`
+- [ ] Voice entry upload + whisperX transcription
+- [ ] Embedding service — nomic-embed-text via OpenRouter
+- [ ] Journal screen (mobile)
+
+**Phase 2 — Synthesize** · **Phase 3 — Reflect** · **Phase 4 — Query** · **Phase 5 — Polish** are queued.
 
 Track everything on the [Project Board](https://github.com/TheHustleHouse-HQ/atlars/projects).
 
@@ -188,7 +197,7 @@ ATLARS is built by [The Hustle House](https://github.com/TheHustleHouse-HQ). We 
 
 Apache License 2.0 — see [`LICENSE`](LICENSE)
 
-Copyright © 2025 The Hustle House. All rights reserved.
+Copyright © 2026 The Hustle House. All rights reserved.
 
 The ATLARS name, logo, and brand identity are trademarks of The Hustle House and may not be used without written permission.
 
