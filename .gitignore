@@ -39,3 +39,9 @@ Thumbs.db
 
 # Uploads (local dev audio files)
 backend/uploads/
+
+# Claude Code
+.claude/
+
+# Celery Beat schedule db
+celerybeat-schedule
