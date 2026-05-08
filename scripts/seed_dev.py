@@ -6,13 +6,12 @@ Run from the backend/ directory with the virtual environment active:
 Idempotent — safe to run multiple times.
 """
 import asyncio
-import sys
 import uuid
 from datetime import datetime, timedelta
 import random
 
 from motor.motor_asyncio import AsyncIOMotorClient
-from passlib.context import CryptContext
+import bcrypt as _bcrypt
 
 MONGO_URL = "mongodb://localhost:27017"
 DB_NAME = "atlars"
@@ -20,7 +19,9 @@ TEST_EMAIL = "test@atlars.dev"
 TEST_PASSWORD = "testpassword"
 TEST_DISPLAY_NAME = "Test User"
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _hash(password: str) -> str:
+    return _bcrypt.hashpw(password.encode(), _bcrypt.gensalt()).decode()
 
 SAMPLE_ENTRIES = [
     "Had a really productive morning. Finished the backend auth flow and it feels solid.",
@@ -73,7 +74,7 @@ async def seed():
         user_doc = {
             "user_id": user_id,
             "email": TEST_EMAIL,
-            "hashed_password": pwd_context.hash(TEST_PASSWORD),
+            "hashed_password": _hash(TEST_PASSWORD),
             "display_name": TEST_DISPLAY_NAME,
             "created_at": now,
             "last_active_at": now,

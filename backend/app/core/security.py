@@ -2,12 +2,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 import uuid
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_TYPE = "access"
@@ -15,11 +13,11 @@ REFRESH_TOKEN_TYPE = "refresh"
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def _create_token(token_type: str, user_id: str, expires_delta: timedelta, token_id: str | None = None) -> str:

@@ -1,5 +1,3 @@
-version: "3.9"
-
 # Production Docker Compose
 # Requires a .env file with:
 #   MONGO_URL=<your MongoDB Atlas connection string>
