@@ -1,4 +1,9 @@
 # ATLARS
+
+<p align="center">
+  <img src="assets/banner.jpeg" alt="ATLARS" width="600" />
+</p>
+
 ### Adaptive Temporal Life Analysis & Reflection System
 
 > A personal identity intelligence framework. Not a chatbot. Not a content tool. A longitudinal data system that treats your inner life as a dataset worth collecting, analyzing, and understanding over time.
