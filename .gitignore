@@ -1,0 +1,41 @@
+# Environment — never commit secrets
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+build/
+*.tsbuildinfo
+.next/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.log
+
+# Uploads (local dev audio files)
+backend/uploads/
