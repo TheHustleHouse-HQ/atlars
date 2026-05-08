@@ -1,0 +1,71 @@
+name: Issue Queue
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  open-next-queued:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Count open issues (excluding queued)
+        id: count
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            // Exclude issues labelled 'queued' (shouldn't be open, but just in case)
+            const activeOpen = openIssues.filter(
+              i => !i.labels.some(l => l.name === 'queued') && !i.pull_request
+            );
+
+            core.setOutput('count', activeOpen.length);
+            console.log(`Active open issues: ${activeOpen.length}`);
+
+      - name: Open next queued issue if count < 12
+        if: steps.count.outputs.count < 12
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const count = parseInt('${{ steps.count.outputs.count }}');
+            const needed = 12 - count;
+            console.log(`Need to open ${needed} issue(s)`);
+
+            // Find oldest closed issues with 'queued' label
+            const { data: queued } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              labels: 'queued',
+              per_page: needed,
+              direction: 'asc',  // oldest first
+            });
+
+            for (const issue of queued) {
+              // Remove 'queued' label
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                name: 'queued',
+              });
+
+              // Reopen the issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'open',
+              });
+
+              console.log(`Opened #${issue.number}: ${issue.title}`);
+            }
