@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from pydantic import BaseModel
@@ -14,6 +14,8 @@ from app.core.security import (
     decode_refresh_token,
 )
 from app.models.user import UserCreate, UserResponse, UserInDB
+from app.core.limiter import limiter
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 bearer_scheme = HTTPBearer()
@@ -68,7 +70,8 @@ async def register(payload: UserCreate):
 
 
 @router.post("/login", response_model=AuthResponse)
-async def login(payload: LoginRequest):
+@limiter.limit("5/minute")
+async def login(request: Request, payload: LoginRequest):
     users = get_users_collection()
 
     user = await users.find_one({"email": payload.email.lower()})
