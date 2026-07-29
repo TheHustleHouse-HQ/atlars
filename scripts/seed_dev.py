@@ -13,7 +13,7 @@ import random
 from motor.motor_asyncio import AsyncIOMotorClient
 import bcrypt as _bcrypt
 
-MONGO_URL = "mongodb://localhost:27017"
+MONGO_URL = "mongodb://localhost:27018"
 DB_NAME = "atlars"
 TEST_EMAIL = "test@atlars.dev"
 TEST_PASSWORD = "testpassword"
