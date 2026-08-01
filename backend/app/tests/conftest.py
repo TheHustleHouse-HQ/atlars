@@ -9,6 +9,5 @@ def settings_override(monkeypatch):
     monkeypatch.setattr(settings, "mongo_db_name", "atlars_test")
     monkeypatch.setattr(settings, "mongo_url", "mongodb://localhost:27018")
     monkeypatch.setattr(settings, "redis_url", "redis://localhost:6380/15")
+    monkeypatch.setattr(settings, "transcription_provider", "mock")
     yield
-
-cd

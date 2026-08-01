@@ -9,10 +9,12 @@ celery_app = Celery(
         "app.workers.daily_jobs",
         "app.workers.weekly_jobs",
         "app.workers.monthly_jobs",
+        "app.workers.voice_jobs",
     ],
 )
 
 celery_app.conf.task_queues = {
+    "voice": {},
     "daily": {},
     "weekly": {},
     "monthly": {},

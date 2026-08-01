@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, UploadFile, File, Form
 
 from app.api.deps import get_current_user
 from app.models.entry import (
@@ -7,9 +7,11 @@ from app.models.entry import (
     EntryUpdate, 
     EntryResponse, 
     PaginatedEntriesResponse, 
+    VoiceEntryResponse,
     Modality
 )
 from app.services.capture import entry_service
+from app.services.capture import voice_transcription
 
 
 router = APIRouter(prefix="/entries", tags=["entries"])
@@ -24,6 +26,22 @@ async def create_entry(
     Submit a text entry.
     """
     return await entry_service.create_entry(user=current_user, entry_data=entry_in)
+
+
+@router.post("/voice", response_model=VoiceEntryResponse, status_code=status.HTTP_202_ACCEPTED)
+async def create_voice_entry(
+    audio: UploadFile = File(...),
+    session_id: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload a voice note.
+    """
+    return await voice_transcription.process_voice_upload(
+        user=current_user, 
+        audio=audio, 
+        session_id=session_id
+    )
 
 
 @router.get("/", response_model=PaginatedEntriesResponse)

@@ -135,3 +135,18 @@ async def test_delete_entry(async_client: AsyncClient, auth_headers: dict):
     # Verify it's gone
     get_resp = await async_client.get(f"/entries/{entry_id}", headers=auth_headers)
     assert get_resp.status_code == 404
+
+async def test_create_voice_entry(async_client: AsyncClient, auth_headers: dict):
+    with patch("app.services.capture.voice_transcription.transcribe_audio.delay") as mock_enqueue:
+        files = {'audio': ('test.mp3', b'dummy audio content', 'audio/mpeg')}
+        response = await async_client.post(
+            "/entries/voice",
+            files=files,
+            headers=auth_headers
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert data["modality"] == "voice"
+        assert data["status"] == "pending"
+        
+        mock_enqueue.assert_called_once_with(data["entry_id"])

@@ -11,6 +11,13 @@ class Modality(str, Enum):
     MICRO = "micro"
 
 
+class EntryStatus(str, Enum):
+    PENDING = "pending"
+    TRANSCRIBING = "transcribing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class EntryCreate(BaseModel):
     raw_text: str
     modality: Modality = Modality.TEXT
@@ -38,12 +45,20 @@ class PaginatedEntriesResponse(BaseModel):
     next_cursor: Optional[str] = None
 
 
+class VoiceEntryResponse(BaseModel):
+    entry_id: str
+    modality: Modality
+    status: EntryStatus
+    timestamp: datetime
+
+
 class EntryInDB(BaseModel):
     entry_id: str
     user_id: str
     raw_text: str
     timestamp: datetime
     modality: Modality
+    status: EntryStatus = EntryStatus.COMPLETED
     session_id: Optional[str] = None
     embedding: Optional[List[float]] = None
     embedding_generated_at: Optional[datetime] = None
@@ -52,3 +67,6 @@ class EntryInDB(BaseModel):
     compression_tier: str
     compression_candidate_id: Optional[str] = None
     maturity_stage_at_capture: str
+    transcription_started_at: Optional[datetime] = None
+    transcription_completed_at: Optional[datetime] = None
+    transcription_error: Optional[str] = None

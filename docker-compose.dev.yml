@@ -61,7 +61,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: celery -A app.workers.celery_app worker -Q daily,weekly,monthly --loglevel=info
+    command: celery -A app.workers.celery_app worker -Q voice,daily,weekly,monthly --loglevel=info
 
   beat:
     build:

@@ -24,6 +24,21 @@ class Settings(BaseSettings):
     backend_port: int = 8000
     cors_origins: str = "http://localhost:3000,http://localhost:8081"
 
+    # Voice Uploads
+    upload_dir: str = "uploads/"
+    max_audio_size_bytes: int = 25 * 1024 * 1024
+    allowed_audio_extensions: str = ".mp3,.wav,.m4a,.webm"
+
+    # Transcription
+    transcription_provider: str = "mock"
+    whisper_model: str = "base"
+    whisper_language: str = "en"
+    whisper_device: str = "auto"
+
+    @property
+    def allowed_audio_extensions_list(self) -> list[str]:
+        return [ext.strip() for ext in self.allowed_audio_extensions.split(",")]
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",")]
