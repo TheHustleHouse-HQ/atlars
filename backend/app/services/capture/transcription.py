@@ -44,6 +44,18 @@ class WhisperXProvider(TranscriptionProvider):
             return
 
         import torch
+
+        # Fix for PyTorch 2.6 weights_only=True security restrictions
+        # We must monkey-patch BEFORE importing whisperx/pyannote since they might 
+        # do `from torch import load` internally.
+        if not getattr(torch.load, '_is_patched', False):
+            original_load = torch.load
+            def safe_load(*args, **kwargs):
+                kwargs['weights_only'] = False
+                return original_load(*args, **kwargs)
+            safe_load._is_patched = True  # type: ignore
+            torch.load = safe_load
+
         import whisperx
         
         # Determine device
@@ -69,6 +81,10 @@ class WhisperXProvider(TranscriptionProvider):
 
         if WhisperXProvider._model is None:
             WhisperXProvider.load_models()
+            
+        if WhisperXProvider._model is None:
+            logger.error("WhisperXProvider._model is still None after load_models() completed.")
+            raise RuntimeError("Failed to load WhisperX model. `whisperx.load_model` returned None. Check if the PyTorch monkey-patch is interfering with model loading.")
 
         import whisperx
         

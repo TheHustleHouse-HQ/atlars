@@ -12,3 +12,5 @@ python-multipart==0.0.12
 torch
 torchaudio
 whisperx
+rich==13.7.1
+gliner2[local]

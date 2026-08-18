@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # OpenRouter
     openrouter_api_key: str = ""
 
+    # Embeddings
+    embedding_model: str = "nvidia/nemotron-3-embed-1b:free"
+    embedding_dimensions: int = 2048
+
     # App
     env: str = "development"
     backend_port: int = 8000

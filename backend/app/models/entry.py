@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Dict
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Modality(str, Enum):
@@ -16,6 +16,12 @@ class EntryStatus(str, Enum):
     TRANSCRIBING = "transcribing"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class SynthesisStatus(BaseModel):
+    graph_extracted_at: Optional[datetime] = None
+    traits_extracted_at: Optional[datetime] = None
+    beliefs_extracted_at: Optional[datetime] = None
 
 
 class EntryCreate(BaseModel):
@@ -70,3 +76,4 @@ class EntryInDB(BaseModel):
     transcription_started_at: Optional[datetime] = None
     transcription_completed_at: Optional[datetime] = None
     transcription_error: Optional[str] = None
+    synthesis: SynthesisStatus = Field(default_factory=SynthesisStatus)

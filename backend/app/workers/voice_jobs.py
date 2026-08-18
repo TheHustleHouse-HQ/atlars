@@ -6,12 +6,17 @@ from app.services.capture.transcription import get_transcription_provider
 from app.services.capture.audio_storage import audio_storage
 from app.workers.daily_jobs import embed_entry
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 @celery_app.task(name="transcribe_audio", queue="voice", autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def transcribe_audio(entry_id: str):
     """
     Event-driven worker task to transcribe an audio entry.
     """
+    logger.info(f"🎙️ Voice transcription task started for entry {entry_id}")
+    
     # We must run DB calls synchronously inside celery, or use async event loops.
     # Assuming `get_entries_collection()` returns a Motor collection, we need asyncio.run
     # Let's write an async helper to handle this since Motor is async.
@@ -46,6 +51,7 @@ async def _process_transcription(entry_id: str):
 
         try:
             # Transcribe
+            logger.info(f"⚙️ Sending audio to {provider.__class__.__name__} for transcription...")
             result = provider.transcribe(audio_url)
             
             # Update on success
@@ -60,6 +66,7 @@ async def _process_transcription(entry_id: str):
             )
             
             # Enqueue next pipeline step
+            logger.info(f"✨ Transcription complete! Enqueuing embedding task for entry {entry_id}...")
             embed_entry.delay(entry_id)
 
         except Exception as e:
@@ -71,9 +78,7 @@ async def _process_transcription(entry_id: str):
                     "transcription_error": str(e)
                 }}
             )
-            # Cleanup orphaned file
-            if audio_url:
-                audio_storage.delete(audio_url)
+            # Removed Cleanup orphaned file logic so that Celery retries can still find the file.
             raise e  # Reraise so Celery knows it failed and can retry if applicable
     finally:
         await close_db()

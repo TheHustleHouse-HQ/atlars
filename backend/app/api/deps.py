@@ -18,7 +18,7 @@ async def get_current_user(
     )
     try:
         payload = decode_access_token(credentials.credentials)
-        user_id: str = payload.get("sub")
+        user_id: str | None = payload.get("sub")
         if not user_id:
             raise credentials_exception
     except JWTError:
@@ -30,3 +30,27 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+def require_maturity_stage(required_stage: str):
+    async def _dependency(current_user: dict = Depends(get_current_user)):
+        stages = ["baseline", "extraction", "scoring", "inference"]
+        current_stage = current_user.get("maturity_stage", "baseline")
+        try:
+            current_idx = stages.index(current_stage)
+            req_idx = stages.index(required_stage)
+        except ValueError:
+            current_idx = 0
+            req_idx = 0
+            
+        if current_idx < req_idx:
+            raise HTTPException(
+                status_code=status.HTTP_423_LOCKED,
+                detail={
+                    "code": "MATURITY_GATE",
+                    "message": f"This feature requires the '{required_stage}' stage. You are currently at '{current_stage}'.",
+                    "current_stage": current_stage,
+                    "required_stage": required_stage
+                }
+            )
+        return current_user
+    return _dependency

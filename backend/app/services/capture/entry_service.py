@@ -1,6 +1,9 @@
 from datetime import datetime
 import uuid
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 from fastapi import HTTPException, status
 from pymongo import DESCENDING
@@ -15,19 +18,32 @@ async def create_entry(user: dict, entry_data: EntryCreate) -> dict:
     users_collection = get_users_collection()
     now = datetime.utcnow()
 
-    # 1. Update user metadata
+    # 1. Determine new maturity stage
+    current_count = user.get("entry_count", 0)
+    new_count = current_count + 1
+    
+    maturity_stage = user.get("maturity_stage", "baseline")
+    new_maturity_stage = maturity_stage
+
+    if maturity_stage == "baseline" and new_count >= 7:
+        new_maturity_stage = "extraction"
+        logger.info(f"🚀 User {user['user_id']} upgraded to extraction maturity stage!")
+
+    # 2. Update user metadata
     update_ops = {"$inc": {"entry_count": 1}, "$set": {"last_active_at": now}}
     if not user.get("first_entry_at"):
         update_ops["$set"]["first_entry_at"] = now
+        
+    if new_maturity_stage != maturity_stage:
+        update_ops["$set"]["maturity_stage"] = new_maturity_stage
 
     await users_collection.update_one(
         {"user_id": user["user_id"]},
         update_ops
     )
 
-    # 2. Create the entry
+    # 3. Create the entry
     entry_id = str(uuid.uuid4())
-    maturity_stage = user.get("maturity_stage", "baseline")
 
     entry_in_db = EntryInDB(
         entry_id=entry_id,
@@ -37,13 +53,14 @@ async def create_entry(user: dict, entry_data: EntryCreate) -> dict:
         modality=entry_data.modality,
         session_id=entry_data.session_id,
         compression_tier="hot",
-        maturity_stage_at_capture=maturity_stage,
+        maturity_stage_at_capture=new_maturity_stage,
     )
 
     entry_dict = entry_in_db.model_dump()
     await entries_collection.insert_one(entry_dict)
 
     # 3. Enqueue embed_entry task
+    logger.info(f"📝 New {entry_data.modality.value} entry created in MongoDB (entry_id: {entry_id})")
     embed_entry.delay(entry_id)
 
     return entry_dict
@@ -114,6 +131,7 @@ async def update_entry(user: dict, entry_id: str, entry_update: EntryUpdate) -> 
     if not result:
         raise HTTPException(status_code=404, detail="Entry not found")
 
+    logger.info(f"✏️ Updated existing entry (entry_id: {entry_id})")
     embed_entry.delay(entry_id)
 
     return result
@@ -124,3 +142,5 @@ async def delete_entry(user: dict, entry_id: str) -> None:
     result = await entries_collection.delete_one({"entry_id": entry_id, "user_id": user["user_id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Entry not found")
+        
+    logger.info(f"🗑️ Deleted entry (entry_id: {entry_id})")
