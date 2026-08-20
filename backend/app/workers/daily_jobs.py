@@ -108,10 +108,21 @@ async def _process_graph_entities():
         await close_db()
 
 
-@celery_app.task(queue="daily")
-def extract_traits(user_id: str) -> None:
-    # Phase 2 — placeholder
-    pass
+@celery_app.task(name="extract_traits", queue="daily")
+def extract_traits() -> None:
+    """
+    Daily cron job to extract OCEAN traits from recent entries.
+    """
+    logger.info("🚀 Starting daily OCEAN trait extraction...")
+    asyncio.run(_process_trait_extractions())
+
+async def _process_trait_extractions():
+    from app.services.synthesis.trait_extraction import process_trait_extractions
+    await connect_db()
+    try:
+        await process_trait_extractions()
+    finally:
+        await close_db()
 
 
 @celery_app.task(queue="daily")

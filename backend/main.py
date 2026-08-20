@@ -9,7 +9,7 @@ setup_logger()
 
 from app.core.config import settings
 from app.core.database import connect_db, close_db
-from app.api.routes import auth, entries, graph
+from app.api.routes import auth, entries, graph, traits
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(entries.router)
 app.include_router(graph.router)
+app.include_router(traits.router)
 
 
 @app.get("/health", tags=["system"])

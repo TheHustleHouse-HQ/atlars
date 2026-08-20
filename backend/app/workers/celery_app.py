@@ -32,6 +32,14 @@ celery_app.conf.beat_schedule = {
     "update-maturity-stages-daily": {
         "task": "update_user_maturity_stages",
         "schedule": crontab(hour="0", minute="0"), # Runs daily at midnight UTC
+    },
+    "extract-traits-daily": {
+        "task": "extract_traits",
+        "schedule": crontab(hour="1", minute="0"), # Runs daily at 1 AM UTC
+    },
+    "extract-graph-entities-daily": {
+        "task": "extract_graph_entities",
+        "schedule": crontab(hour="2", minute="0"), # Runs daily at 2 AM UTC
     }
 }
 

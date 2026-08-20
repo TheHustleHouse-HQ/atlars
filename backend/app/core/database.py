@@ -37,6 +37,10 @@ def get_traits_collection():
     return get_database()["traits"]
 
 
+def get_trait_signals_collection():
+    return get_database()["trait_signals"]
+
+
 def get_beliefs_collection():
     return get_database()["beliefs"]
 
