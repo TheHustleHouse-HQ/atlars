@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     backend_port: int = 8000
     cors_origins: str = "http://localhost:3000,http://localhost:8081"
     trait_extraction_prompt_version: str = "1.0"
+    belief_extraction_prompt_version: str = "1.0"
 
     # Voice Uploads
     upload_dir: str = "uploads/"

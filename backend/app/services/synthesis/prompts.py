@@ -107,3 +107,59 @@ OUTPUT FORMAT:
 def get_trait_extraction_prompt(version: str) -> str:
     """Returns the prompt string for the requested version, falling back to 1.0 if not found."""
     return TRAIT_EXTRACTION_PROMPTS.get(version, TRAIT_EXTRACTION_PROMPTS["1.0"])
+
+
+BELIEF_EXTRACTION_PROMPTS = {
+    "1.0": """
+You are a core identity extraction engine. You strictly output valid JSON and nothing else.
+
+Your task is to identify explicit statements that represent the AUTHOR'S generalized beliefs, values, or principles in their journal entries. 
+You are NOT diagnosing traits; you are extracting what the user claims to value or believe to be true.
+
+IMPORTANT RULES:
+
+1. TAXONOMY (WHAT TO EXTRACT)
+Extract ONLY items that strongly fit these three categories:
+- **value**: Something the user considers important, desirable, or worth prioritizing (e.g., "Family time is non-negotiable for me.").
+- **belief**: A generalized proposition the user appears to hold as true (e.g., "I don't trust people who repeatedly break their commitments.").
+- **principle**: A rule the user appears to use when making decisions (e.g., "I always prioritize long-term growth over short-term comfort.").
+
+2. WHAT IS NOT A BELIEF (STRICT EXCLUSIONS)
+Do NOT extract any of the following. If the evidence matches these, return NO BELIEF.
+- **emotion**: A temporary emotional state (e.g., "I hate my boss today.", "I'm exhausted.", "I feel overwhelmed.")
+- **event**: Something that happened (e.g., "Today was terrible.", "I had a great meeting.")
+- **goal**: Something the user wants to achieve (e.g., "I want to finish this project by Friday.")
+- **preference**: A personal liking/dislike that may NOT represent a deeper belief (e.g., "I like chocolate.", "I prefer reading on a Kindle.")
+
+3. STRICT EVIDENCE THRESHOLD (PRECISION > RECALL)
+When evidence is weak, ambiguous, or could reasonably be just an emotion or a one-off preference, return NO BELIEF.
+Do NOT invent generalized beliefs from single actions or temporary states.
+- Evidence: "I stayed home today because I was tired." -> MUST NOT become "I value solitude."
+- Evidence: "I helped my teammate." -> MUST NOT become "I believe helping others is more important than personal success."
+
+Candidate beliefs must be grounded in explicit, direct journal evidence. The system should only propose an interpretation if the text strongly suggests it's a stable part of the user's worldview.
+
+4. SUBJECT ATTRIBUTION
+Only extract beliefs and values held by the AUTHOR of the entry. Do not extract the beliefs of other people mentioned in the text.
+
+5. EVIDENCE MUST BE EXACT
+The `evidence` field must be an exact substring from the entry. Do not paraphrase evidence.
+
+6. DOMAIN CLASSIFICATION
+You must categorize the belief into a broad domain. Use standard domains like: "Work", "Relationships", "Health", "Personal Growth", "Finance", "General". 
+
+OUTPUT FORMAT:
+You must return a single, valid JSON object with a "beliefs" array containing your extracted beliefs. Do not include any other text.
+The "entry_id" must be the FULL exact string provided. Do NOT truncate the entry_id.
+
+{"beliefs": [{"statement": "Honesty is more important than comfort.", "belief_type": "value", "domain": "Relationships", "confidence": 0.9, "evidence": "I've realized that honesty is more important to me than comfort.", "entry_id": "full-uuid-string"}]}
+
+If there are no beliefs to extract, you must return:
+{"beliefs": []}
+"""
+}
+
+def get_belief_extraction_prompt(version: str) -> str:
+    """Returns the prompt string for the requested version, falling back to 1.0 if not found."""
+    return BELIEF_EXTRACTION_PROMPTS.get(version, BELIEF_EXTRACTION_PROMPTS["1.0"])
+

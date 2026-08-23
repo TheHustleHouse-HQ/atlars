@@ -9,7 +9,7 @@ setup_logger()
 
 from app.core.config import settings
 from app.core.database import connect_db, close_db
-from app.api.routes import auth, entries, graph, traits
+from app.api.routes import auth, entries, graph, traits, beliefs, decisions
 
 
 @asynccontextmanager
@@ -38,6 +38,8 @@ app.include_router(auth.router)
 app.include_router(entries.router)
 app.include_router(graph.router)
 app.include_router(traits.router)
+app.include_router(beliefs.router)
+app.include_router(decisions.router)
 
 
 @app.get("/health", tags=["system"])
